@@ -6,13 +6,13 @@
 #    By: mtravez <mtravez@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/09/25 11:47:30 by mtravez           #+#    #+#              #
-#    Updated: 2025/09/25 12:20:34 by mtravez          ###   ########.fr        #
+#    Updated: 2025/09/29 14:18:22 by mtravez          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = ft_ls
 
-SRC = ft_ls.c
+SRC = ft_ls.c utils.c
 
 CFLAGS      = -Wall -Wextra -Werror
 LDFLAGS     = -L$(shell brew --prefix readline)/lib/ -lreadline

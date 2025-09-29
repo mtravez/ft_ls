@@ -6,7 +6,7 @@
 /*   By: mtravez <mtravez@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/25 11:58:58 by mtravez           #+#    #+#             */
-/*   Updated: 2025/09/25 12:00:34 by mtravez          ###   ########.fr       */
+/*   Updated: 2025/09/29 14:44:53 by mtravez          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,5 +20,13 @@
 # include <sys/stat.h>
 # include <unistd.h>
 # include "libft/libft.h"
+
+typedef struct s_file {
+	char *name;
+	char *utime;
+	char *path;
+}	t_file;
+
+void sorting();
 
 #endif

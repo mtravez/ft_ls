@@ -6,7 +6,7 @@
 /*   By: mtravez <mtravez@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/25 11:51:15 by mtravez           #+#    #+#             */
-/*   Updated: 2025/09/25 12:46:26 by mtravez          ###   ########.fr       */
+/*   Updated: 2025/09/29 15:02:00 by mtravez          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ int print_dirs(char path[]) {
         return (1);
     }
     struct dirent *dp;
-	t_list *names;
+	// t_list *names;
 	t_list *dirs;
 	char **files;
 	files = malloc(dir->__dd_len * sizeof(char *));
@@ -48,7 +48,9 @@ int main(int argc, char *argv[]) {
 	if (argc < 2) {
 		return 1;
 	}
-    print_dirs(argv[1]);
+    ft_printf(argv[1]);
+    
+    sorting();
     
     return 0;
 }
