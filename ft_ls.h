@@ -19,6 +19,7 @@
 # include <sys/types.h>
 # include <sys/stat.h>
 # include <unistd.h>
+# include <time.h>
 # include "libft/libft.h"
 
 typedef struct s_file {
@@ -27,6 +28,8 @@ typedef struct s_file {
 	char *path;
 }	t_file;
 
-void sorting();
+void	sorting();
+t_file	*new_file(char *name, char *path, char *utime);
+void	print_files(void *file);
 
 #endif

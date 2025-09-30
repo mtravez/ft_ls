@@ -18,28 +18,46 @@ int is_dir(char path[]) {
     return S_ISDIR(path_stat.st_mode);
 }
 
+t_file *fetch_file_info(struct dirent *dp, char *path) {
+    t_file *file;
+    struct stat attr;
+
+    ft_printf("%s\n", path);
+    if (stat(path, &attr) == -1)
+        return NULL;
+    file = new_file(ft_strdup(dp->d_name), ft_strdup(path), ft_strdup(ctime(&attr.st_mtime)));
+    return file;
+}
+
 int print_dirs(char path[]) {
-    DIR *dir = opendir(path);
+    struct dirent   *dp;
+	// t_list          *dirs;
+    t_file          *new_file;
+    t_list          *files;
+    DIR             *dir;
+    char            *file_path;
+    
+    dir = opendir(path);
+    files = NULL;
     if (!dir) {
         ft_printf("Could not open directory.\n");
         return (1);
     }
-    struct dirent *dp;
-	// t_list *names;
-	t_list *dirs;
-	char **files;
-	files = malloc(dir->__dd_len * sizeof(char *));
-	int i = 0;
     while ((dp = readdir(dir)) != NULL) {
-        if (ft_strncmp(dp->d_name, ".", ft_strlen(dp->d_name)) == 0 || ft_strncmp(dp->d_name, "..", ft_strlen(dp->d_name)) == 0)
+        if (ft_strncmp(dp->d_name, ".", 1) == 0)
+        continue;
+        
+        file_path = ft_strjoin(path, dp->d_name);
+        new_file = fetch_file_info(dp, file_path);
+        free(file_path);
+        if (!new_file)
             continue;
-		files[i] = malloc(ft_strlen(dp->d_name) + 1);
-		files[i] = dp->d_name;
-        if (is_dir(ft_strjoin(path, ft_strjoin("/", dp->d_name))))
-			dirs = ft_lstnew(dp->d_name);
+        ft_lstadd_back(&files, ft_lstnew(new_file));
     }
-	ft_printf("%s", dp->d_name);
     closedir(dir);
+    ft_lstiter(files, &print_files);
+    // ft_printf("/////////////");
+    // ft_lstiter(dirs, &print_files);
     return 0;
 }
 
@@ -48,9 +66,12 @@ int main(int argc, char *argv[]) {
 	if (argc < 2) {
 		return 1;
 	}
-    ft_printf(argv[1]);
-    
-    sorting();
+    // ft_printf(argv[1]);
+    char *path = ft_strjoin(argv[1], "/");
+    print_dirs(path);
+    free(path);
+
+    // sorting();
     
     return 0;
 }
