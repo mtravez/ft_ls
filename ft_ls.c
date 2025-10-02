@@ -32,7 +32,7 @@ t_file *fetch_file_info(struct dirent *dp, char *path) {
 int print_dirs(char path[]) {
     struct dirent   *dp;
 	// t_list          *dirs;
-    t_file          *new_file;
+    t_file          *temp_file;
     t_list          *files;
     DIR             *dir;
     char            *file_path;
@@ -40,19 +40,32 @@ int print_dirs(char path[]) {
     dir = opendir(path);
     files = NULL;
     if (!dir) {
-        ft_printf("Could not open directory.\n");
-        return (1);
+        struct stat path_stat;
+        if (stat(path, &path_stat) == -1) {
+            ft_printf("Could not open directory.\n");
+            return (1);
+        }
+        else {
+            char *file_name = ft_strchr(path, '/');
+            if (file_name == NULL) {
+                file_name = ft_strdup(path);
+            } else {
+                file_name = ft_strdup(++file_name);
+            }
+            temp_file = new_file(file_name, path, ft_strdup(ctime(&path_stat.st_mtime)));
+            ft_lstadd_back(&files, ft_lstnew(temp_file));
+        }
     }
     while ((dp = readdir(dir)) != NULL) {
         if (ft_strncmp(dp->d_name, ".", 1) == 0)
         continue;
         
         file_path = ft_strjoin(path, dp->d_name);
-        new_file = fetch_file_info(dp, file_path);
+        temp_file = fetch_file_info(dp, file_path);
         free(file_path);
-        if (!new_file)
+        if (!temp_file)
             continue;
-        ft_lstadd_back(&files, ft_lstnew(new_file));
+        ft_lstadd_back(&files, ft_lstnew(temp_file));
     }
     closedir(dir);
     ft_lstiter(files, &print_files);
@@ -61,6 +74,8 @@ int print_dirs(char path[]) {
     return 0;
 }
 
+
+
 int main(int argc, char *argv[]) {
 	
 	if (argc < 2) {
@@ -68,7 +83,7 @@ int main(int argc, char *argv[]) {
 	}
     // ft_printf(argv[1]);
     char *path = ft_strjoin(argv[1], "/");
-    print_dirs(path);
+    print_dirs("ft_ls.c");
     free(path);
 
     // sorting();
