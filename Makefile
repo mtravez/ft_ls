@@ -12,13 +12,12 @@
 
 NAME = ft_ls
 
-SRC = ft_ls.c utils.c
+SRC = ft_ls.c utils.c sort.c flags.c
 
 CFLAGS      = -Wall -Wextra -Werror
-LDFLAGS     = -L$(shell brew --prefix readline)/lib/ -lreadline
-CPPFLAGS	= -I$(shell brew --prefix readline)/include
 
 SAN_LDFLAGS = -L../LeakSanitizer -llsan -lc++ -Wno-gnu-include-next -I ../LeakSanitize
+FSAN_FLAGS = -fsanitize=undefined -fsanitize-undefined-trap-on-error
 OBJ_DIR = obj
 OBJ = $(SRC:%.c=$(OBJ_DIR)/%.o)
 
@@ -39,7 +38,7 @@ $(OBJ_DIR):
 	@mkdir -p $(OBJ_DIR)$(BUILTIN_DIR)
 
 $(NAME): $(LIBFT) $(OBJ_DIR) $(OBJ)
-	@cc $(LDFLAGS) $(CFLAGS) $(CPPFLAGS) $(OBJ) $(LIBFT) -o $(NAME)
+	@cc $(CFLAGS) $(OBJ) $(LIBFT) -o $(NAME)
 	@printf "$(PURPLE)[ft_ls] Compiled successfuly!!! :D $(NC)\n"
 
 $(LIBFT):

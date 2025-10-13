@@ -71,10 +71,15 @@ int print_dirs(char path[]) {
     ft_lstiter(files, &print_files);
     // ft_printf("/////////////");
     // ft_lstiter(dirs, &print_files);
+
+    // free_list(&files);
     return 0;
 }
 
-
+// t_list get_dirs(char *path, t_flags flags) {
+//     struct dirent *dp;
+//     t_file *temp_file;
+// }
 
 int main(int argc, char *argv[]) {
 	
@@ -82,8 +87,10 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
     // ft_printf(argv[1]);
+    t_flags flags = get_flags(argc, argv);
+    print_flags(flags);
     char *path = ft_strjoin(argv[1], "/");
-    print_dirs("ft_ls.c");
+    print_dirs(path);
     free(path);
 
     // sorting();
