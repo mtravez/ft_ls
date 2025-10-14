@@ -196,7 +196,7 @@ int ft_ls(char *path, t_flags flags, int multiple) {
     dir = opendir(path);
     files = NULL;
     if (multiple)
-        printf("\n%s: \n", path);
+        printf("%s: \n", path);
     if (!dir) {
         struct stat path_stat;
         if (stat(dir_path, &path_stat) == -1) {
@@ -239,8 +239,10 @@ int ft_ls(char *path, t_flags flags, int multiple) {
     // Print files
     if (flags.long_format)
         ft_lstiter(files, &print_long_format);
-    else
+    else {
         ft_lstiter(files, &print_normal_format);
+    }
+    ft_printf("\n");
     
     padding = save_padding;
     // Recursive print
@@ -297,6 +299,8 @@ int main(int argc, char *argv[]) {
     }
 
     int multiple = (ft_lstsize(dirs) + ft_lstsize(files)) > 1;
+    if (flags.display_recursive)
+        multiple = 1;
     for (t_list *d = dirs; d; d = d->next) {
         ft_ls((char *)d->content, flags, multiple);
     }
