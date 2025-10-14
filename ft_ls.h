@@ -13,6 +13,7 @@
 #ifndef FT_LS_H
 # define FT_LS_H
 
+// # include <pwd.h>
 # include <stdio.h>
 # include <stdlib.h>
 # include <stdbool.h>
@@ -37,6 +38,13 @@ typedef struct s_flags {
 	bool	display_recursive;
 }	t_flags;
 
+typedef struct s_padding {
+	int	links;
+	int	user;
+	int	group;
+	int	size;
+}	t_padding;
+
 void	sorting();
 t_file	*new_file(char *name, char *path, char *utime);
 void	print_files(void *file);
@@ -46,5 +54,6 @@ void	sort_t(void *lst);
 void	free_list(t_list **head);
 t_flags	get_flags(int argc, char **argv);
 void	print_flags(t_flags flags);
+void stat_error(char *name, t_list **list);
 
 #endif

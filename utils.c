@@ -54,3 +54,14 @@ void print_ls_error(char *msg) {
 	ft_putstr_fd("ls: ", STDERR_FILENO);
 	ft_putstr_fd(msg, STDERR_FILENO);
 }
+
+void stat_error(char *name, t_list **list) {
+	if (*list != NULL) {
+		free_list(list);
+	}
+	ft_putstr_fd("ft_ls: cannot open directory '", STDERR_FILENO);
+	ft_putstr_fd(name, STDERR_FILENO);
+	ft_putstr_fd("': ", STDERR_FILENO);
+	perror(NULL);
+	exit(1);
+}
