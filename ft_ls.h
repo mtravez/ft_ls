@@ -26,7 +26,7 @@
 
 typedef struct s_file {
 	char *name;
-	char *utime;
+	time_t mtime;
 	char *path;
 }	t_file;
 
@@ -46,14 +46,15 @@ typedef struct s_padding {
 }	t_padding;
 
 void	sorting();
-t_file	*new_file(char *name, char *path, char *utime);
+t_file	*new_file(char *name, char *path, time_t mtime);
 void	print_files(void *file);
 void	sort_a(void *lst);
 void	sort_r(void *lst);
 void	sort_t(void *lst);
+void	sort_single_files(void *lst);
 void	free_list(t_list **head);
 t_flags	get_flags(int argc, char **argv);
 void	print_flags(t_flags flags);
-void stat_error(char *name, t_list **list);
+void	stat_error(char *name, t_list **list);
 
 #endif

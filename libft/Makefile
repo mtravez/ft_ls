@@ -13,7 +13,7 @@
 NAME = libft.a
 
 SRC = fun/ft_atoi.c fun/ft_bzero.c fun/ft_isalnum.c fun/ft_isalpha.c fun/ft_isascii.c fun/ft_isdigit.c fun/ft_isprint.c \
-	fun/ft_memchr.c	fun/ft_memcmp.c	fun/ft_memcpy.c	fun/ft_memset.c	fun/ft_memmove.c \
+	fun/ft_memchr.c	fun/ft_memcmp.c	fun/ft_memcpy.c	fun/ft_memset.c	fun/ft_memmove.c fun/ft_strcmp.c fun/ft_strcasecmp.c \
 	fun/ft_strchr.c	fun/ft_strlcat.c fun/ft_strlcpy.c fun/ft_strlen.c fun/ft_strncmp.c fun/ft_strnstr.c	fun/ft_strrchr.c fun/ft_strdup.c \
 	fun/ft_tolower.c fun/ft_toupper.c fun/ft_calloc.c fun/ft_substr.c fun/ft_strjoin.c fun/ft_strtrim.c fun/ft_split.c fun/ft_itoa.c \
 	fun/ft_strmapi.c fun/ft_striteri.c fun/ft_putchar_fd.c fun/ft_putstr_fd.c fun/ft_putendl_fd.c fun/ft_putnbr_fd.c \

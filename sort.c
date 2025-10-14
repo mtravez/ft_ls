@@ -12,20 +12,24 @@
 
 #include "ft_ls.h"
 
+int compare_alphabetical(void *x, void *y) {
+    char *x_name = (char *) x;
+    char *y_name = (char *) y;
+
+    return (ft_strcmp(x_name, y_name));
+}
+
 int compare_time(void *x, void *y) {
 	t_file *x_file;
 	t_file *y_file;
 	
 	x_file = (t_file *) x;
 	y_file = (t_file *) y;
- 	char *x_time = x_file->utime;
-	char *y_time = y_file->utime;
-	size_t length = ft_strlen(x_time);
-	if (length < ft_strlen(y_time)){
-		length = ft_strlen(y_time);
-	}
-	int result = ft_strncmp(x_time, y_time, length);
-	return result;
+ 	if (x_file->mtime > y_file->mtime)
+        return -1;
+    else if (x_file->mtime < y_file->mtime)
+        return 1;
+    return 0;
 }
 
 int compare_name(void *x, void *y) {
@@ -34,15 +38,7 @@ int compare_name(void *x, void *y) {
 	
 	x_file = (t_file *) x;
 	y_file = (t_file *) y;
- 	char *x_name = x_file->name;
-	char *y_name = y_file->name;
-	size_t length = ft_strlen(x_name);
-	if (length < ft_strlen(y_name)){
-		length = ft_strlen(y_name);
-	}
-	int result = ft_strncmp(x_name, y_name, length);
-	// ft_printf("%s : %s = %i\n", x_name, y_name, result);
-	return result;
+    return ft_strcasecmp(x_file->name, y_file->name);
 }
 
 int compare_name_reverse(void *x, void *y) {
@@ -53,11 +49,7 @@ int compare_name_reverse(void *x, void *y) {
 	y_file = (t_file *) y;
  	char *x_name = x_file->name;
 	char *y_name = y_file->name;
-	size_t length = ft_strlen(x_name);
-	if (length < ft_strlen(y_name)){
-		length = ft_strlen(y_name);
-	}
-	return ft_strncmp(y_name, x_name, length);
+	return ft_strcasecmp(y_name, x_name);
 }
 
 t_list *ft_lstsort( int (*f)(void *, void *), t_list *head, t_list *tail) {
@@ -83,10 +75,9 @@ t_list *ft_lstsort( int (*f)(void *, void *), t_list *head, t_list *tail) {
 
 void quicksort_helper(t_list *head, t_list *tail, int (*f)(void *, void *)) {
 	if (head == NULL || head == tail) {
-		return;
+        return;
 	}
-	
-	t_list *pivot = ft_lstsort(&compare_name_reverse, head, tail);
+	t_list *pivot = ft_lstsort(f, head, tail);
 	quicksort_helper(head, pivot, f);
 	quicksort_helper(pivot->next, tail, f);
 	
@@ -104,13 +95,17 @@ void sort_t(void *lst) {
 	quicksort_helper(lst, ft_lstlast(lst), &compare_time);
 }
 
+void sort_single_files(void *lst) {
+    quicksort_helper(lst, ft_lstlast(lst), &compare_alphabetical);
+}
+
 // void sorting() {
 // 	char *arr[] = {"abcde", "werty", "poiuyt", "bcdef", "bcdefg"};
 // 	t_list *lst;
-// 	lst = ft_lstnew(new_file(arr[0], "", ""));
-// 	for (int i = 1; i < 5; i++) {
+// 	lst = NULL;
+// 	for (int i = 0; i < 5; i++) {
 // 		ft_lstadd_back(&lst, ft_lstnew(new_file(arr[i], "", "")));
 // 	}
-// 	quicksort_helper(lst, ft_lstlast(lst));
+// 	quicksort_helper(lst, ft_lstlast(lst), &compare_name);
 // 	ft_lstiter(lst, &print_files);
 // }

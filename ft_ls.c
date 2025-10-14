@@ -20,7 +20,7 @@ int is_dir(char path[]) {
     return S_ISDIR(path_stat.st_mode);
 }
 
-t_file *fetch_file_info(struct dirent *dp, char *path) {
+t_file *fetch_file_info(char *name, char *path) {
     t_file *file;
     struct stat attr;
 
@@ -31,7 +31,7 @@ t_file *fetch_file_info(struct dirent *dp, char *path) {
     padding.user = __max(padding.user, ft_strlen(ft_itoa(attr.st_uid))); //TODO: Change to getpwuid
     padding.group = __max(padding.group, ft_strlen(ft_itoa(attr.st_gid))); // TODO: Change to get getgrgid
     padding.size = __max(padding.size, ft_strlen(ft_itoa(attr.st_size)));
-    file = new_file(ft_strdup(dp->d_name), ft_strdup(path), ft_strdup(ctime(&attr.st_mtime)));
+    file = new_file(ft_strdup(name), ft_strdup(path), attr.st_mtime);
     return file;
 }
 
@@ -65,7 +65,7 @@ int print_dirs(char path[]) {
             } else {
                 file_name = ft_strdup(++file_name);
             }
-            temp_file = new_file(file_name, path, ft_strdup(ctime(&path_stat.st_mtime)));
+            temp_file = new_file(file_name, path, path_stat.st_mtime);
             ft_lstadd_back(&files, ft_lstnew(temp_file));
         }
     }
@@ -75,7 +75,7 @@ int print_dirs(char path[]) {
             continue;
         
         file_path = ft_strjoin(path, dp->d_name);
-        temp_file = fetch_file_info(dp, file_path);
+        temp_file = fetch_file_info(dp->d_name, file_path);
         free(file_path);
         if (!temp_file)
             continue;
@@ -146,6 +146,14 @@ void pad(int pad, int word_length) {
     }
 }
 
+char *get_mtime(time_t mtime) {
+    char *time = ctime(&mtime);
+    if (!time)
+        return "";
+    time[ft_strlen(time) - 6] = 0;
+    return &time[4];
+}
+
 void print_long_format(void *file) {
     t_file *file_obj = (t_file *) file;
     struct stat file_stat;
@@ -156,13 +164,15 @@ void print_long_format(void *file) {
     char *links = ft_itoa(file_stat.st_nlink);
     pad(padding.links, ft_strlen(links));
     ft_printf("%s ", links);
+    // TODO: change to string
     pad(padding.user, ft_strlen(ft_itoa(file_stat.st_uid)));
     ft_printf("%i ", file_stat.st_uid);
+    // TODO: change to string
     pad(padding.group, ft_strlen(ft_itoa(file_stat.st_gid)));
     ft_printf("%i ", file_stat.st_gid);
     pad(padding.size, ft_strlen(ft_itoa(file_stat.st_size)));
     ft_printf("%i ", file_stat.st_size);
-    ft_printf("%s ", ctime(&file_stat.st_mtime));
+    ft_printf("%s ", get_mtime(file_obj->mtime));
     ft_printf("%s\n", file_obj->name);
 }
 
@@ -171,28 +181,35 @@ void print_long_format(void *file) {
 //     t_file *temp_file;
 // }
 
-int ft_ls(char *path, t_flags flags) {
+int ft_ls(char *path, t_flags flags, int multiple) {
     struct dirent   *dp;
     t_file          *temp_file;
     t_list          *files;
     DIR             *dir;
     char            *file_path;
+    char            *dir_path;
+    t_padding       save_padding;
     
+    save_padding = padding;
+    dir_path = ft_strjoin(path, "/");
+    // dir_path = ft_strdup(path);
     dir = opendir(path);
     files = NULL;
+    if (multiple)
+        printf("\n%s: \n", path);
     if (!dir) {
         struct stat path_stat;
-        if (stat(path, &path_stat) == -1) {
-            stat_error(path, &files);
+        if (stat(dir_path, &path_stat) == -1) {
+            stat_error(dir_path, &files);
         }
         else {
-            char *file_name = ft_strchr(path, '/');
+            char *file_name = ft_strchr(dir_path, '/');
             if (file_name == NULL) {
-                file_name = ft_strdup(path);
+                file_name = ft_strdup(dir_path);
             } else {
                 file_name = ft_strdup(++file_name);
             }
-            temp_file = new_file(file_name, path, ft_strdup(ctime(&path_stat.st_mtime)));
+            temp_file = new_file(file_name, dir_path, path_stat.st_mtime);
             ft_lstadd_back(&files, ft_lstnew(temp_file));
         }
     }
@@ -200,8 +217,8 @@ int ft_ls(char *path, t_flags flags) {
         if (!flags.all_files && ft_strncmp(dp->d_name, ".", 1) == 0)
             continue;
         
-        file_path = ft_strjoin(path, dp->d_name);
-        temp_file = fetch_file_info(dp, file_path);
+        file_path = ft_strjoin(dir_path, dp->d_name);
+        temp_file = fetch_file_info(dp->d_name, file_path);
         free(file_path);
         if (!temp_file)
             continue;
@@ -215,8 +232,9 @@ int ft_ls(char *path, t_flags flags) {
         sort_r(files);
     else if (flags.mod_time_order)
         sort_t(files);
-    else
+    else {
         sort_a(files);
+    }
     
     // Print files
     if (flags.long_format)
@@ -224,31 +242,67 @@ int ft_ls(char *path, t_flags flags) {
     else
         ft_lstiter(files, &print_normal_format);
     
+    padding = save_padding;
     // Recursive print
     t_list *temp = files;
-    while (files != NULL && flags.display_recursive) {
+    while (temp != NULL && flags.display_recursive) {
         t_file *file = (t_file *)temp->content;
-        if (is_dir(file->path) && ft_strncmp(".", file->name, ft_strlen(file->name)) && ft_strncmp("..", file->name, ft_strlen(file->name)))
-            ft_ls(file->path, flags);
+        if (is_dir(file->path) && ft_strncmp(".", file->name, ft_strlen(file->name)) && ft_strncmp("..", file->name, ft_strlen(file->name))) {
+            ft_ls(file->path, flags, multiple);
+        }
         temp = temp->next;
     }
     free_list(&files);
+    free(dir_path);
     return 0;
 }
 
 int main(int argc, char *argv[]) {
-    // ft_printf(argv[1]);
     t_flags flags = get_flags(argc, argv);
-    print_flags(flags);
+    // print_flags(flags);
+    t_list *dirs = NULL;
+    t_list *files = NULL;
+    t_list *errors = NULL;
+
     for (int i = 1; i < argc; i++) {
-        if (argv[i] && argv[i][0] != '-') {
-            char *path = ft_strjoin(argv[i], "/");
-            ft_ls(path, flags);
-            free(path);
-        }
+        if (!argv[i] || argv[i][0] == '-')
+            continue;
+        struct stat content;
+        if (stat(argv[i], &content) == -1)
+            ft_lstadd_back(&errors, ft_lstnew(argv[i]));
+        else if (S_ISDIR(content.st_mode))
+            ft_lstadd_back(&dirs, ft_lstnew(argv[i]));
+        else
+            ft_lstadd_back(&files, ft_lstnew(fetch_file_info(argv[i], argv[i])));
     }
 
-    // sorting();
+    for (t_list *e = errors; e; e = e->next) {
+        ft_putstr_fd("ft_ls: cannot access '", STDERR_FILENO);
+        ft_putstr_fd((char *)e->content, STDERR_FILENO);
+        ft_putchar_fd('\'', STDERR_FILENO);
+    }
+    
+    if (ft_lstsize(files) > 1) {
+        sort_a(files);
+    
+        if (flags.reverse_order)
+            sort_r(files);
+        if (flags.mod_time_order)
+            sort_t(files);
+    
+        if (flags.long_format)
+            ft_lstiter(files, &print_long_format);
+        else
+            ft_lstiter(files, &print_normal_format);
+    }
+
+    int multiple = (ft_lstsize(dirs) + ft_lstsize(files)) > 1;
+    for (t_list *d = dirs; d; d = d->next) {
+        ft_ls((char *)d->content, flags, multiple);
+    }
+    free_list(&files);
+    ft_lstclear(&errors, NULL);
+    ft_lstclear(&dirs, NULL);
     
     return 0;
 }
