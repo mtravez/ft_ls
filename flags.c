@@ -29,7 +29,7 @@ t_flags get_flags(int argc, char **argv) {
                         ft_putstr_fd("ft_ls: unknown option -- ", STDERR_FILENO);
                         ft_putchar_fd(argv[i][j], STDERR_FILENO);
                         ft_putchar_fd('\n', STDERR_FILENO);
-                        exit(EXIT_FAILURE);
+                        exit(2);
                         break;
                 }
                 j++;

@@ -6,7 +6,7 @@
 /*   By: mtravez <mtravez@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/25 11:51:15 by mtravez           #+#    #+#             */
-/*   Updated: 2025/10/15 15:50:48 by mtravez          ###   ########.fr       */
+/*   Updated: 2025/10/15 19:05:51 by mtravez          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,13 +164,13 @@ void print_long_format(void *file) {
     char *links = ft_itoa(file_stat.st_nlink);
     char *size = ft_itoa(file_stat.st_size);
     pad(padding.links, ft_strlen(links));
-    ft_printf(" %s ", links);
+    ft_printf("%s ", links);
     pad(padding.user, ft_strlen(getpwuid(file_stat.st_uid)->pw_name));
     ft_printf("%s ", getpwuid(file_stat.st_uid)->pw_name);
     pad(padding.group, ft_strlen(getgrgid(file_stat.st_gid)->gr_name));
-    ft_printf(" %s ", getgrgid(file_stat.st_gid)->gr_name);
+    ft_printf("%s ", getgrgid(file_stat.st_gid)->gr_name);
     pad(padding.size, ft_strlen(size));
-    ft_printf(" %i ", file_stat.st_size);
+    ft_printf("%i ", file_stat.st_size);
     free(links);
     free(size);
     ft_printf("%s ", get_mtime(file_obj->mtime));
@@ -196,78 +196,69 @@ int ft_ls(char *path, t_flags flags, int multiple) {
     char            *file_path;
     char            *dir_path;
     t_padding       save_padding;
+    int             error_code = 0;
     
     save_padding = padding;
     dir_path = ft_strjoin(path, "/");
     dir = opendir(path);
     files = NULL;
-    if (multiple)
-        printf("%s: \n", path);
     if (!dir) {
         struct stat path_stat;
         if (stat(dir_path, &path_stat) == -1) {
             stat_error(dir_path, &files);
-            return (1);
-        }
-        else {
-            char *file_name = ft_strchr(dir_path, '/');
-            if (file_name == NULL) {
-                file_name = ft_strdup(dir_path);
-            } else {
-                file_name = ft_strdup(++file_name);
-            }
-            temp_file = new_file(file_name, dir_path, path_stat.st_mtime);
-            ft_lstadd_back(&files, ft_lstnew(temp_file));
+            return (2);
         }
     }
     long total = 0;
     while ((dp = readdir(dir)) != NULL) {
         if (!flags.all_files && ft_strncmp(dp->d_name, ".", 1) == 0)
-            continue;
+        continue;
         
         file_path = ft_strjoin(dir_path, dp->d_name);
         temp_file = fetch_file_info(dp->d_name, file_path, &total);
         free(file_path);
         if (!temp_file)
-            continue;
+        continue;
         
         ft_lstadd_back(&files, ft_lstnew(temp_file));
     }
     closedir(dir);
-
+    
     // Sort files
     if (flags.reverse_order)
-        sort_r(files);
+    sort_r(files);
     else if (flags.mod_time_order)
-        sort_t(files);
+    sort_t(files);
     else {
         sort_a(files);
     }
     
     // Print files
     if (flags.long_format) {
-        ft_printf("total %i\n", total);
+        ft_printf("total %i\n", (total / 2));
         ft_lstiter(files, &print_long_format);
     }
     else {
         ft_lstiter(files, &print_normal_format);
+        ft_printf("\n");
     }
-    ft_printf("\n\n");
     
     padding = save_padding;
-
+    
     // Recursive print
     t_list *temp = files;
     while (temp != NULL && flags.display_recursive) {
         t_file *file = (t_file *)temp->content;
         if (is_dir(file->path) && ft_strncmp(".", file->name, ft_strlen(file->name)) && ft_strncmp("..", file->name, ft_strlen(file->name))) {
-            ft_ls(file->path, flags, multiple);
+            if (multiple)
+                ft_printf("\n%s:\n", file->path);
+            error_code = ft_ls(file->path, flags, multiple);
         }
         temp = temp->next;
     }
     free_list(&files);
     free(dir_path);
-    return 0;
+    return error_code;
 }
 
 void clear_node(void *node) {
@@ -283,10 +274,12 @@ int main(int argc, char *argv[]) {
     t_list *errors = NULL;
     int error_code = 0;
     long total = 0;
+    int first_printing = 1;
     
     for (int i = 1; i < argc; i++) {
-        if (!argv[i] || argv[i][0] == '-')
+        if (!argv[i] || argv[i][0] == '-') {
             continue;
+        }
         struct stat content;
         if (stat(argv[i], &content) == -1) {
             ft_lstadd_back(&errors, ft_lstnew(argv[i]));
@@ -313,21 +306,32 @@ int main(int argc, char *argv[]) {
             sort_t(files);
     
         if (flags.long_format) {
-            ft_printf("total %i\n", total);
             ft_lstiter(files, &print_long_format);
         }
         else
             ft_lstiter(files, &print_normal_format);
+        ft_putchar('\n');
     }
 
     int multiple = (ft_lstsize(dirs) + ft_lstsize(files)) > 1;
     if (flags.display_recursive || ft_lstsize(errors) > 0)
         multiple = 1;
     for (t_list *d = dirs; d; d = d->next) {
-        error_code = ft_ls((char *)d->content, flags, multiple);
+        if (!first_printing)
+            ft_printf("\n");
+        else {
+            first_printing = 0;
+        }
+        if (multiple)
+            ft_printf("%s:\n", (char *)d->content);
+        error_code = MAX(ft_ls((char *)d->content, flags, multiple), error_code);
     }
-    if (ft_lstsize(dirs) == 0 && ft_lstsize(files) == 0)
-        error_code = ft_ls(".", flags, multiple);
+    if (ft_lstsize(dirs) == 0 && ft_lstsize(files) == 0) {        
+        if (multiple) {
+            ft_printf(".:\n");
+        }
+        error_code = MAX(ft_ls(".", flags, multiple), error_code);
+    }
     free_list(&files);
     ft_lstclear(&errors, &clear_node);
     ft_lstclear(&dirs, &clear_node);
