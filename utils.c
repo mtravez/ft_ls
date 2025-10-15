@@ -6,7 +6,7 @@
 /*   By: mtravez <mtravez@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/25 12:51:05 by mtravez           #+#    #+#             */
-/*   Updated: 2025/09/29 15:31:08 by mtravez          ###   ########.fr       */
+/*   Updated: 2025/10/15 15:47:50 by mtravez          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ void free_node(void *node) {
 		free(file->path);
 	file->name = NULL;
 	file->path = NULL;
+	free(file);
 }
 
 void free_list(t_list **head) {
@@ -60,5 +61,4 @@ void stat_error(char *name, t_list **list) {
 	ft_putstr_fd(name, STDERR_FILENO);
 	ft_putstr_fd("': ", STDERR_FILENO);
 	perror(NULL);
-	exit(1);
 }

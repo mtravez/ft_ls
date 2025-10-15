@@ -6,7 +6,7 @@
 #    By: mtravez <mtravez@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/09/25 11:47:30 by mtravez           #+#    #+#              #
-#    Updated: 2025/09/29 14:18:22 by mtravez          ###   ########.fr        #
+#    Updated: 2025/10/15 15:39:50 by mtravez          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,7 @@ SRC = ft_ls.c utils.c sort.c flags.c
 
 CFLAGS      = -Wall -Wextra -Werror
 
-SAN_LDFLAGS = -L../LeakSanitizer -llsan -lc++ -Wno-gnu-include-next -I ../LeakSanitize
+SAN_LDFLAGS = -L./LeakSanitizer -llsan -lc++ -Wno-gnu-include-next -I ./LeakSanitize
 FSAN_FLAGS = -fsanitize=undefined -fsanitize-undefined-trap-on-error
 OBJ_DIR = obj
 OBJ = $(SRC:%.c=$(OBJ_DIR)/%.o)

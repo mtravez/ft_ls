@@ -38,7 +38,7 @@ int compare_name(void *x, void *y) {
 	
 	x_file = (t_file *) x;
 	y_file = (t_file *) y;
-    return ft_strcasecmp(x_file->name, y_file->name);
+    return ft_strcmp(x_file->name, y_file->name);
 }
 
 int compare_name_reverse(void *x, void *y) {
@@ -49,7 +49,7 @@ int compare_name_reverse(void *x, void *y) {
 	y_file = (t_file *) y;
  	char *x_name = x_file->name;
 	char *y_name = y_file->name;
-	return ft_strcasecmp(y_name, x_name);
+	return ft_strcmp(y_name, x_name);
 }
 
 t_list *ft_lstsort( int (*f)(void *, void *), t_list *head, t_list *tail) {

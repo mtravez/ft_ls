@@ -6,14 +6,16 @@
 /*   By: mtravez <mtravez@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/25 11:58:58 by mtravez           #+#    #+#             */
-/*   Updated: 2025/09/29 14:44:53 by mtravez          ###   ########.fr       */
+/*   Updated: 2025/10/15 15:09:49 by mtravez          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef FT_LS_H
 # define FT_LS_H
 
-// # include <pwd.h>
+# include <pwd.h>
+# include <grp.h>
+# include <limits.h>
 # include <stdio.h>
 # include <stdlib.h>
 # include <stdbool.h>
@@ -23,6 +25,8 @@
 # include <unistd.h>
 # include <time.h>
 # include "libft/libft.h"
+
+# define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
 typedef struct s_file {
 	char *name;

@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: mtravez <mtravez@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/10/14 14:48:09 by mtravez           #+#    #+#             */
-/*   Updated: 2023/04/17 12:10:04 by mtravez          ###   ########.fr       */
+/*   Created: 2025/10/15 15:53:12 by mtravez           #+#    #+#             */
+/*   Updated: 2025/10/15 15:53:58 by mtravez          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,8 @@ int	ft_strcasecmp(const char *s1, const char *s2)
 	i = 0;
 	temps1 = (unsigned char *) s1;
 	temps2 = (unsigned char *) s2;
-	while (ft_tolower(temps1[i]) && (ft_tolower(temps1[i]) == ft_tolower(temps2[i])))
+	while (ft_tolower(temps1[i])
+		&& (ft_tolower(temps1[i]) == ft_tolower(temps2[i])))
 		i++;
 	return (ft_tolower(temps1[i]) - ft_tolower(temps2[i]));
 }
