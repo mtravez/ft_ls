@@ -6,7 +6,7 @@
 /*   By: mtravez <mtravez@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/25 11:51:15 by mtravez           #+#    #+#             */
-/*   Updated: 2025/10/15 19:05:51 by mtravez          ###   ########.fr       */
+/*   Updated: 2025/10/15 21:02:06 by mtravez          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,50 +44,6 @@ int get_blocks(char *path) {
 
     stat(path, &st);
     return st.st_size / 2; //Change to st_blocks
-}
-
-int print_dirs(char path[]) {
-    struct dirent   *dp;
-	// t_list          *dirs;
-    t_file          *temp_file;
-    t_list          *files;
-    DIR             *dir;
-    char            *file_path;
-    
-    dir = opendir(path);
-    files = NULL;
-    if (!dir) {
-        struct stat path_stat;
-        if (lstat(path, &path_stat) == -1) {
-            ft_printf("Could not open directory.\n");
-            return (1);
-        }
-        else {
-            char *file_name = ft_strchr(path, '/');
-            if (file_name == NULL) {
-                file_name = ft_strdup(path);
-            } else {
-                file_name = ft_strdup(++file_name);
-            }
-            temp_file = new_file(file_name, path, path_stat.st_mtime);
-            ft_lstadd_back(&files, ft_lstnew(temp_file));
-        }
-    }
-    long total = 0;
-    while ((dp = readdir(dir)) != NULL) {
-        if (ft_strncmp(dp->d_name, ".", 1) == 0)
-            continue;
-        
-        file_path = ft_strjoin(path, dp->d_name);
-        temp_file = fetch_file_info(dp->d_name, file_path, &total);
-        free(file_path);
-        if (!temp_file)
-            continue;
-        ft_lstadd_back(&files, ft_lstnew(temp_file));
-    }
-    closedir(dir);
-    ft_lstiter(files, &print_files);
-    return 0;
 }
 
 void print_normal_format(void *file) {
@@ -200,27 +156,37 @@ int ft_ls(char *path, t_flags flags, int multiple) {
     
     save_padding = padding;
     dir_path = ft_strjoin(path, "/");
-    dir = opendir(path);
+    dir = opendir(dir_path);
     files = NULL;
     if (!dir) {
-        struct stat path_stat;
-        if (stat(dir_path, &path_stat) == -1) {
-            stat_error(dir_path, &files);
-            return (2);
-        }
+        stat_error(dir_path, &files);
+        free(dir_path);
+        errno = 0;
+        return(1);
     }
     long total = 0;
     while ((dp = readdir(dir)) != NULL) {
         if (!flags.all_files && ft_strncmp(dp->d_name, ".", 1) == 0)
-        continue;
+            continue;
         
         file_path = ft_strjoin(dir_path, dp->d_name);
         temp_file = fetch_file_info(dp->d_name, file_path, &total);
         free(file_path);
         if (!temp_file)
-        continue;
+            continue;
         
         ft_lstadd_back(&files, ft_lstnew(temp_file));
+    }
+    if (errno != 0) {
+        ft_putstr_fd("ft_ls: reading directory '", STDERR_FILENO);
+        ft_putstr_fd(path, STDERR_FILENO);
+        ft_putstr_fd("': ", STDERR_FILENO);
+        perror(NULL);
+        closedir(dir);
+        free(dir_path);
+        free_list(&files);
+        errno = 0;
+        return 2;
     }
     closedir(dir);
     
@@ -285,8 +251,9 @@ int main(int argc, char *argv[]) {
             ft_lstadd_back(&errors, ft_lstnew(argv[i]));
             error_code = 1;
         }
-        else if (S_ISDIR(content.st_mode))
-            ft_lstadd_back(&dirs, ft_lstnew(argv[i]));
+        else if (S_ISDIR(content.st_mode)) {
+            ft_lstadd_back(&dirs, ft_lstnew(fetch_file_info(argv[i], argv[i], &total)));
+        }
         else
             ft_lstadd_back(&files, ft_lstnew(fetch_file_info(argv[i], argv[i], &total)));
     }
@@ -294,7 +261,9 @@ int main(int argc, char *argv[]) {
     for (t_list *e = errors; e; e = e->next) {
         ft_putstr_fd("ft_ls: cannot access '", STDERR_FILENO);
         ft_putstr_fd((char *)e->content, STDERR_FILENO);
-        ft_putstr_fd("'\n", STDERR_FILENO);
+        ft_putstr_fd("': ", STDERR_FILENO);
+        perror(NULL);
+        errno = 0;
     }
     
     if (ft_lstsize(files) >= 1) {
@@ -313,6 +282,14 @@ int main(int argc, char *argv[]) {
         ft_putchar('\n');
     }
 
+    if (ft_lstsize(dirs) >= 1) {
+        sort_a(dirs);
+    
+        if (flags.reverse_order)
+            sort_r(dirs);
+        if (flags.mod_time_order)
+            sort_t(dirs);
+    }
     int multiple = (ft_lstsize(dirs) + ft_lstsize(files)) > 1;
     if (flags.display_recursive || ft_lstsize(errors) > 0)
         multiple = 1;
@@ -322,19 +299,22 @@ int main(int argc, char *argv[]) {
         else {
             first_printing = 0;
         }
+        t_file *dir = (t_file *)d->content;
         if (multiple)
-            ft_printf("%s:\n", (char *)d->content);
-        error_code = MAX(ft_ls((char *)d->content, flags, multiple), error_code);
+            ft_printf("%s:\n", dir->path);
+        int code = ft_ls(dir->path, flags, multiple);
+        error_code = MAX(code, error_code);
     }
-    if (ft_lstsize(dirs) == 0 && ft_lstsize(files) == 0) {        
+    if (ft_lstsize(dirs) == 0 && ft_lstsize(files) == 0 && ft_lstsize(errors) == 0) {        
         if (multiple) {
             ft_printf(".:\n");
         }
-        error_code = MAX(ft_ls(".", flags, multiple), error_code);
+        int code = ft_ls(".", flags, multiple);
+        error_code = MAX(code, error_code);
     }
     free_list(&files);
+    free_list(&dirs);
     ft_lstclear(&errors, &clear_node);
-    ft_lstclear(&dirs, &clear_node);
     
     return error_code;
 }

@@ -6,7 +6,7 @@
 /*   By: mtravez <mtravez@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/25 11:58:58 by mtravez           #+#    #+#             */
-/*   Updated: 2025/10/15 15:09:49 by mtravez          ###   ########.fr       */
+/*   Updated: 2025/10/15 20:01:40 by mtravez          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@
 # include <sys/stat.h>
 # include <unistd.h>
 # include <time.h>
+# include <errno.h>
+# include <string.h>
 # include "libft/libft.h"
 
 # define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))

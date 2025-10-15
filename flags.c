@@ -26,8 +26,9 @@ t_flags get_flags(int argc, char **argv) {
                         flags.display_recursive = 1;
                         break;
                     default:
-                        ft_putstr_fd("ft_ls: unknown option -- ", STDERR_FILENO);
+                        ft_putstr_fd("ft_ls: invalid option -- '", STDERR_FILENO);
                         ft_putchar_fd(argv[i][j], STDERR_FILENO);
+                        ft_putchar_fd('\'', STDERR_FILENO);
                         ft_putchar_fd('\n', STDERR_FILENO);
                         exit(2);
                         break;
